@@ -1,101 +1,121 @@
-import Image from "next/image";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  if (session) {
+    redirect("/dashboard");
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen flex flex-col">
+      <Header />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      {/* Hero Section */}
+      <main className="flex-1">
+        <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20 text-center">
+          <div className="max-w-4xl mx-auto px-4">
+            <h1 className="text-5xl md:text-6xl font-extrabold mb-6">Transforme Suas Ideias em Realidade</h1>
+            <p className="text-xl md:text-2xl mb-8">Um SaaS poderoso para criar, gerenciar e crescer seu negócio.</p>
+            <Link href="/auth/signin">
+              <button className="bg-white text-blue-600 font-semibold px-8 py-4 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">
+                Comece Agora - É Grátis!
+              </button>
+            </Link>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-4xl font-bold text-gray-800 mb-12">Por que escolher nosso SaaS?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="p-6 bg-white rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">Gerenciamento Fácil</h3>
+                <p className="text-gray-600">Dashboards intuitivos para controlar usuários e assinaturas.</p>
+              </div>
+              <div className="p-6 bg-white rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">Pagamentos Integrados</h3>
+                <p className="text-gray-600">Integração com Stripe para assinaturas simples e seguras.</p>
+              </div>
+              <div className="p-6 bg-white rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">Escalabilidade</h3>
+                <p className="text-gray-600">Cresça sem limites com uma infraestrutura robusta.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section className="py-20 text-center">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-4xl font-bold text-gray-800 mb-12">Planos para Todos</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="p-6 bg-white rounded-lg shadow-md border-t-4 border-blue-500">
+                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Básico</h3>
+                <p className="text-3xl font-bold text-gray-800 mb-6">R$ 19/mês</p>
+                <ul className="text-gray-600 space-y-2 mb-6">
+                  <li>1 usuário</li>
+                  <li>Suporte básico</li>
+                  <li>10GB de armazenamento</li>
+                </ul>
+                <Link href="/auth/signin">
+                  <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+                    Escolher Plano
+                  </button>
+                </Link>
+              </div>
+              <div className="p-6 bg-white rounded-lg shadow-md border-t-4 border-indigo-500 scale-105">
+                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Pro</h3>
+                <p className="text-3xl font-bold text-gray-800 mb-6">R$ 49/mês</p>
+                <ul className="text-gray-600 space-y-2 mb-6">
+                  <li>5 usuários</li>
+                  <li>Suporte prioritário</li>
+                  <li>50GB de armazenamento</li>
+                </ul>
+                <Link href="/auth/signin">
+                  <button className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+                    Escolher Plano
+                  </button>
+                </Link>
+              </div>
+              <div className="p-6 bg-white rounded-lg shadow-md border-t-4 border-purple-500">
+                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Enterprise</h3>
+                <p className="text-3xl font-bold text-gray-800 mb-6">R$ 99/mês</p>
+                <ul className="text-gray-600 space-y-2 mb-6">
+                  <li>Usuários ilimitados</li>
+                  <li>Suporte 24/7</li>
+                  <li>Armazenamento ilimitado</li>
+                </ul>
+                <Link href="/auth/signin">
+                  <button className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700">
+                    Escolher Plano
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Final */}
+        <section className="py-20 bg-blue-600 text-white text-center">
+          <div className="max-w-4xl mx-auto px-4">
+            <h2 className="text-4xl font-bold mb-6">Pronto para começar?</h2>
+            <p className="text-xl mb-8">Experimente grátis por 14 dias, sem compromisso.</p>
+            <Link href="/auth/signin">
+              <button className="bg-white text-blue-600 font-semibold px-8 py-4 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">
+                Teste Grátis Agora
+              </button>
+            </Link>
+          </div>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <Footer />
     </div>
   );
 }
