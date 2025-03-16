@@ -4,14 +4,20 @@ Bem-vindo ao **Boilerplate de Micro SaaS**! Este é um template completo para co
 
 ## Recursos
 
-- **Landing Page**: Uma página inicial atraente com CTA (Call to Action) para conversão.
+- **Landing Page**: Página inicial atraente com seções de recursos, planos e CTA para conversão.
 - **Autenticação Completa**: Suporte a login com email/senha e OAuth (Google) via NextAuth.
+- **Registro de Usuários**: Página de signup para criar novos usuários com email, nome e senha.
 - **Área de Administração**: Dashboard protegido para gerenciar usuários e assinaturas (apenas para admins).
+- **Dashboard do Usuário**: Área para visualizar informações do usuário e status de assinatura.
+- **Gerenciamento de Assinaturas**:
+  - Integração com Stripe para criar e gerenciar assinaturas.
+  - Página `/subscribe` para escolher planos e iniciar checkout.
+  - Webhook para atualizar assinaturas no banco.
 - **Banco de Dados**: Integração com PostgreSQL via Prisma ORM.
-- **Gerenciamento de Pagamentos**: Integração com Stripe para assinaturas e webhooks.
 - **Tailwind CSS**: Estilização moderna, responsiva e personalizável.
-- **Proteção de Rotas**: Middleware e componente `ProtectedRoute` para restringir acesso.
+- **Proteção de Rotas**: Middleware para restringir acesso a `/dashboard` e `/admin` e componente `ProtectedRoute` para proteção adicional.
 - **API Segura**: Rotas de API para autenticação e integração com Stripe.
+- **Páginas Estáticas**: Termos de Uso, Política de Privacidade e Contato.
 
 ## Tecnologias
 
@@ -29,24 +35,25 @@ Bem-vindo ao **Boilerplate de Micro SaaS**! Este é um template completo para co
 src/
 ├── app/                    # Rotas do App Router
 │   ├── api/               # Rotas de API
+│   │   ├── auth/[...nextauth]/
+│   │   │   └── route.ts  # Configuração do NextAuth
+│   │   └── stripe/
+│   │       └── webhook/
+│   │           └── route.ts # Webhook do Stripe
 │   ├── admin/            # Área de administração
 │   ├── auth/            # Páginas de autenticação
-│   ├── dashboard/       # Dashboard do usuário
-│   └── page.tsx        # Landing page
+│   ├── dashboard/       # Área do usuário logado
+│   ├── subscribe/       # Página para escolher planos
+│   ├── terms/          # Termos de Uso
+│   ├── privacy/        # Política de Privacidade
+│   ├── contact/        # Página de Contato
+│   ├── layout.tsx      # Layout global
+│   └── page.tsx        # Landing Page
 ├── components/         # Componentes reutilizáveis
-│   ├── Header.tsx
-│   ├── Footer.tsx
-│   ├── AdminSidebar.tsx
-│   └── ProtectedRoute.tsx
 ├── lib/               # Utilitários e configurações
-│   ├── auth.ts       # Configuração do NextAuth
-│   ├── prisma.ts    # Cliente Prisma
-│   └── stripe.ts   # Configuração do Stripe
 ├── middleware.ts     # Proteção de rotas
 ├── prisma/          # Schema do banco de dados
-│   └── schema.prisma
 └── styles/         # Estilos globais
-    └── globals.css
 ```
 
 ## Pré-requisitos
@@ -63,13 +70,12 @@ src/
    git clone https://github.com/seu-usuario/micro-saas-boilerplate.git
    cd micro-saas-boilerplate
    ```
-
 2. **Instale as dependências**:
    ```bash
    npm install
    ```
-
-3. **Configure as variáveis de ambiente**: Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+3. **Configure as variáveis de ambiente**:
+   Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
    ```env
    DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/saas_db"
    NEXTAUTH_URL="http://localhost:3000"
@@ -81,46 +87,65 @@ src/
    NEXT_PUBLIC_URL="http://localhost:3000"
    ```
    Substitua `USER`, `PASSWORD` e `saas_db` pelas credenciais do seu PostgreSQL.
-   Gere uma chave secreta para `NEXTAUTH_SECRET` (ex.: `openssl rand -base64 32`).
-   Obtenha as chaves do Google e Stripe nas respectivas plataformas.
-
 4. **Configure o banco de dados**:
    ```bash
    npx prisma migrate dev --name init
    npx prisma generate
    ```
-
 5. **Inicie o projeto**:
    ```bash
    npm run dev
    ```
-   Acesse [http://localhost:3000](http://localhost:3000) no navegador.
+   Acesse `http://localhost:3000` no navegador.
+
+## Configuração do Stripe
+
+1. **Crie preços no Stripe**:
+   - No Dashboard do Stripe, crie produtos para os planos "Básico", "Pro" e "Enterprise" com preços mensais.
+   - Copie os `Price IDs` e atualize o array `plans` em `src/app/subscribe/page.tsx`.
+
+2. **Teste webhooks localmente**:
+   ```bash
+   stripe listen --forward-to http://localhost:3000/api/stripe/webhook
+   ```
+   Copie o `Webhook Signing Secret` gerado e adicione ao `.env` como `STRIPE_WEBHOOK_SECRET`.
+
+3. **Teste eventos**:
+   ```bash
+   stripe trigger customer.subscription.created
+   ```
 
 ## Uso
 
-- **Landing Page**: Acesse `/` para ver a página inicial com CTA.
-- **Login**: Vá para `/auth/signin` para fazer login com email/senha ou Google.
-- **Registro**: Acesse `/auth/signup` para criar uma nova conta.
-- **Dashboard**: Após login, veja `/dashboard` para informações do usuário e assinatura.
-- **Admin**: Acesse `/admin/dashboard` (apenas para usuários com role "ADMIN").
-- **Logout**: Use `/auth/signout` para sair.
+- **Landing Page**: `/`
+- **Login**: `/auth/signin`
+- **Registro**: `/auth/signup`
+- **Dashboard do Usuário**: `/dashboard`
+- **Assinatura**: `/subscribe`
+- **Admin**: `/admin/dashboard`
+- **Logout**: `/auth/signout`
+- **Páginas Estáticas**:
+  - Termos de Uso: `/terms`
+  - Política de Privacidade: `/privacy`
+  - Contato: `/contact`
 
 ## Scripts Disponíveis
 
 ```bash
-npm run dev              # Inicia o servidor de desenvolvimento
-npm run build            # Gera a build de produção
-npm run start            # Inicia o servidor de produção
-npm run prisma:generate  # Gera o cliente Prisma
-npm run prisma:migrate   # Aplica migrações ao banco
+npm run dev        # Inicia o servidor de desenvolvimento
+npm run build      # Gera a build de produção
+npm run start      # Inicia o servidor de produção
+npm run prisma:generate # Gera o cliente Prisma
+npm run prisma:migrate  # Aplica migrações ao banco
 ```
 
 ## Personalização
 
-- **Estilização**: Edite `src/styles/globals.css` ou adicione classes Tailwind.
-- **Planos**: Ajuste os preços e planos em `src/app/page.tsx`.
-- **Funcionalidades**: Adicione mais rotas ou componentes em `src/app/` e `src/components/`.
-- **Stripe**: Configure webhooks em `src/app/api/stripe/webhook/route.ts` com sua URL de produção.
+- **Estilização**: Edite `src/app/globals.css` ou adicione classes Tailwind.
+- **Planos**: Ajuste os preços e `priceId` em `src/app/subscribe/page.tsx`.
+- **Funcionalidades**: Adicione mais rotas ou componentes.
+- **Stripe**: Configure webhooks com sua URL de produção.
+- **Páginas Estáticas**: Atualize `terms`, `privacy` e `contact` com seu conteúdo real.
 
 ## Contribuição
 
@@ -130,4 +155,6 @@ Sinta-se à vontade para abrir issues ou pull requests com melhorias! Este boile
 
 MIT License - sinta-se livre para usar, modificar e distribuir este código.
 
-Feito com ❤️ por @oadcavalcante
+---
+
+
