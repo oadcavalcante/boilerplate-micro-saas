@@ -1,15 +1,14 @@
-import NextAuth, { AuthOptions, DefaultSession, SessionStrategy } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from "./prisma";
 import bcrypt from "bcrypt";
+import type { DefaultSession, NextAuthOptions } from "next-auth";
 
 declare module "next-auth" {
     interface User {
         role?: string;
     }
-
     interface Session {
         user: {
             id: string;
@@ -25,9 +24,7 @@ declare module "next-auth/jwt" {
     }
 }
 
-
-export const authOptions: AuthOptions = {
-    adapter: PrismaAdapter(prisma),
+export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -37,26 +34,37 @@ export const authOptions: AuthOptions = {
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
-
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
                 });
-
-                if (!user || !user.password) return null;
-
-                const isValid = await bcrypt.compare(credentials.password, user.password);
-                if (!isValid) return null;
-
+                if (!user || !user.password || !await bcrypt.compare(credentials.password, user.password)) return null;
                 return { id: user.id, email: user.email, name: user.name, role: user.role };
             },
         }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            async profile(profile) {
+                const user = await prisma.user.upsert({
+                    where: { email: profile.email },
+                    update: {},
+                    create: {
+                        email: profile.email,
+                        name: profile.name,
+                        role: "USER",
+                    },
+                });
+                return {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role || "USER",
+                };
+            },
         }),
     ],
     session: {
-        strategy: "jwt" as SessionStrategy,
+        strategy: "jwt",
     },
     callbacks: {
         async jwt({ token, user }) {
@@ -68,8 +76,8 @@ export const authOptions: AuthOptions = {
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user.id = token.id as string;
-                session.user.role = token.role as string;
+                session.user.id = token.id;
+                session.user.role = token.role;
             }
             return session;
         },

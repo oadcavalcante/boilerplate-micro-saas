@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
             <div>
               <p className="text-gray-600">Você não tem uma assinatura ativa.</p>
               <a
-                href="/subscribe" // Crie esta rota se quiser
+                href="/subscribe"
                 className="inline-block mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
               >
                 Assinar agora
